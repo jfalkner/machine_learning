@@ -14,7 +14,7 @@ Most code examples are in Python but I'll also include some Java, C/C++ CUDA and
 
 These are all a mix of examples you should be able to easily run yourself.
 
-* [Stable diffusion using just your CPU (doing it the slow way!)](stable_diffusion_cpu/README.md)
+* [Stable diffusion using just your CPU (doing it the slow way!)](projects/stable_diffusion_cpu/README.md)
 
 ## Manuscripts, Courses and Documentation
 
