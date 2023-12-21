@@ -21,4 +21,4 @@ These are all a mix of examples you should be able to easily run yourself.
 
 Notes from review of related topics, manuscripts, documentation and, generally other interesting resources to learn from.
 
-* [High-Resolution Image Synthesis with Latent Diffusion Models](docs/latent-diffusion/README.md) by R. Rombach et al. 2022
+* [High-Resolution Image Synthesis with Latent Diffusion Models](docs/latent_diffusion/README.md) by R. Rombach et al. 2022
