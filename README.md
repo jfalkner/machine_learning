@@ -15,6 +15,7 @@ Most code examples are in Python but I'll also include some Java, C/C++ CUDA and
 These are all a mix of examples you should be able to easily run yourself.
 
 * [Stable diffusion using just your CPU (doing it the slow way!)](projects/stable_diffusion_cpu/README.md)
+* [Classifying handwritten numbers by remaking LeNet-5 and MNIST using PyTorch](projects/lenet5_mnist/README.md)
 
 ## Manuscripts, Courses and Documentation
 
