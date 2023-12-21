@@ -24,8 +24,6 @@ training and test images.
 import torch
 import torchvision
 import torchvision.transforms as transforms
-import torch.nn as nn
-import torch.optim as optim
 
 # Define the transformation to be applied to the data
 transform = transforms.Compose(
@@ -54,6 +52,8 @@ and some approxiate code.
 ![LeNet-5 Architecture](lenet-5_architecture.png)
 
 ```
+import torch.nn as nn
+
 # Define a neural network to match LeNet-5's architecture from the manuscript
 class LeNet5(nn.Module):
     def __init__(self):
@@ -106,44 +106,84 @@ interest of keeping this write-up relatively simple.
 ### Training the LenNet-5 Model
 
 We can run the network by instantiating `LeNet5` and enumerating through the data. The manuscript differs from below
-in that it uses Mean Square Error (MSE) for loss versus the cross entropy loss used below. The manuscript also
-has a more elaborate set of training passes: 20 iterations with various learning rates (2x 0.0005, 3x 0.0002, 3x 0.0001,
-4x 0.00005, 8x 0.00001).
+in that it uses Mean Square Error (MSE) for loss versus the cross entropy loss plus momemtum in the SGD used below. The
+iterations of training are siimlar to the manuscript: 20 iterations with various learning rates (2x 0.0005, 3x 0.0002,
+3x 0.0001, 4x 0.00005, 8x 0.00001).
 
 Below does a few passes through the data using a more aggressive loss function, cross entropy. The end result is likely
 not as fine tuned as LeNet-5; however, it is simpler code, faster and should still work relatively well.
 
 ```
+import torch.optim as optim
+
 net = LeNet5()
 
 # Define the loss function and optimizer
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
-# Train the model
-num_epochs = 2
-for epoch in range(num_epochs):
-    running_loss = 0.0
-    for i, data in enumerate(trainloader, 0):
-        inputs, labels = data
-        optimizer.zero_grad()
-        outputs = net(inputs)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-        running_loss += loss.item()
-        if i % 100 == 99:
-            print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 100))
-            running_loss = 0.0
+def train_model(num_epochs, learning_rate):
+    optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9)
+
+    for epoch in range(num_epochs):
+        running_loss = 0.0
+        for i, data in enumerate(trainloader, 0):
+            inputs, labels = data
+            optimizer.zero_grad()
+            outputs = net(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+            if i % 100 == 99:
+                print('[%s, %d, %5d] loss: %.3f' %
+                      (learning_rate, epoch + 1, i + 1, running_loss / 100))
+                running_loss = 0.0
+
+
+# Follow the LeNet-5 manuscript training epochs and learning rates
+train_model(2, 0.0005)
+train_model(3, 0.0002)
+train_model(3, 0.0001)
+train_model(4, 0.00005)
+train_model(8, 0.00001)
+
 
 print('Finished Training')
 ```
 
 Overall runtime on is fast -- less than a minute. You can see the calcualted loss decrease with each training iteration.
+Training quickly gets down to ~0.1 loss and slowly drops to 0.075.
 
 ```
-WIP: copy the example
+# learning rate, epoc, batch #
+[0.0005, 1,   100] loss: 2.145
+[0.0005, 1,   200] loss: 1.099
+[0.0005, 1,   300] loss: 0.568
+[0.0005, 1,   400] loss: 0.442
+[0.0005, 1,   500] loss: 0.388
+[0.0005, 1,   600] loss: 0.328
+[0.0005, 1,   700] loss: 0.316
+[0.0005, 1,   800] loss: 0.266
+[0.0005, 1,   900] loss: 0.233
+[0.0005, 2,   100] loss: 0.219
+[0.0005, 2,   200] loss: 0.200
+[0.0005, 2,   300] loss: 0.187
+[0.0005, 2,   400] loss: 0.176
+[0.0005, 2,   500] loss: 0.179
+[0.0005, 2,   600] loss: 0.166
+[0.0005, 2,   700] loss: 0.155
+[0.0005, 2,   800] loss: 0.139
+[0.0005, 2,   900] loss: 0.130
+[0.0002, 1,   100] loss: 0.126
+...
+[0.0001, 1,   100] loss: 0.090
+...
+[5e-05, 1,   100] loss: 0.080
+...
+[1e-05, 1,   100] loss: 0.071
+...
+[1e-05, 8,   900] loss: 0.075
+Finished Training
 ```
 
 # Results
@@ -154,23 +194,33 @@ Finally, we can test the resulting accuracy and pull out some examples of cases 
 # Calculating how accurate the model performs
 from torchvision.transforms.functional import to_pil_image
 from PIL import Image
+
 with torch.no_grad():
     correct = 0
     total = 0
     wrong_prediction_count = 0
+    correct_prediction_count = 0
     for images, labels in testloader:
         outputs = net(images)
 
-        # Show the inaccurate predictions
         for i, output in enumerate(outputs):
             prediction = (output.max() == output).nonzero(as_tuple=True)[0].item()
+            # Save images for some of the incorrect predictions
             if prediction != labels[i]:
                 if wrong_prediction_count < 10:
                     wrong_prediction_count += 1
                     image_index = total + i
-                    print(f'{image_index} mismatch. Predicted {prediction} but it was labeled {labels[i]}')
+                    print(f'{image_index} mismatch. Predicted {prediction} but it was labeled {labels[i]}. Logits: {output}')
                     image = to_pil_image(images[i])
                     image.save(f'incorrect_{image_index}_label_{labels[i]}_predicted_{prediction}.png')
+            # Save image for some of the correct predictions
+            else:
+                if correct_prediction_count < 10:
+                    correct_prediction_count += 1
+                    image_index = total + i
+                    print(f'{image_index} match. Predicted {prediction} and labeled {labels[i]}. Logits: {output}')
+                    image = to_pil_image(images[i])
+                    image.save(f'correct_{image_index}_label_{labels[i]}_predicted_{prediction}.png')
 
         # Calculate correct images
         _, predicted = torch.max(outputs.data, 1)
@@ -180,14 +230,49 @@ with torch.no_grad():
     print(f'Test Accuracy of the model on the {len(testset)} test images: {100 * correct / total:.2f}% ({correct} correct, {len(testset) - correct} incorrect')
 ```
 
-93.77% seems pretty good given that this was a quick code example based on the manuscript's description!
+98.14% seems pretty good given that this was a quick code example based on the manuscript's description!
 
 ```
-Test Accuracy of the model on the 10000 test images: 93.77% (9377 correct, 623 incorrect
+Test Accuracy of the model on the 10000 test images: 98.14% (9814 correct, 186 incorrect
+
+
+0 match. Predicted 7 and labeled 7. Logits: [ -2.7, -2.7, 3.1, 5.2, -1.4, -0.1, -11.9, 14.0, -2.3, 4.3]
+1 match. Predicted 2 and labeled 2. Logits: [ 3.3,  6.0, 14.9,  3.3, -8.8, -0.9,  1.4, -3.8, 4.1, -9.5]
+2 match. Predicted 1 and labeled 1. Logits: [-0.4, 10.0,  2.1, -2.9,  1.5, -2.4,  1.7,  1.9, 1.7, -1.8]
+3 match. Predicted 0 and labeled 0. Logits: [11.9, -2.8,  1.7, -3.4, -2.1, -0.1,  5.0,  0.4, -3.1,  2.2]
+4 match. Predicted 4 and labeled 4. Logits: [-1.3, -2.1, -2.3, -4.9, 11.7, -1.8, -0.4,  1.4, -1.9,  3.3]
+151 mismatch. Predicted 8 but it was labeled 9. Logits: [-2.8, -6.3,  0.9,  5.9, -2.5,  1.5, -8.7, -0.9, 6.9,  6.7]
+247 mismatch. Predicted 2 but it was labeled 4. Logits: [ 0.4,  0.5,  7.0, -1.5,  5.0, -2.9,  5.0, -0.9, -1.0, -4.6]
+259 mismatch. Predicted 0 but it was labeled 6. Logits: [10.8, -1.2,  0.08, -3.6, -4.8,  4.8,  5.8, -0.6, -0.5,  0.5]
+320 mismatch. Predicted 7 but it was labeled 9. Logits: [-3.1,  4.4, -0.2,  3.0, -0.7, -1.9, -8.9,  5.3, 4.4,  5.3]
+321 mismatch. Predicted 7 but it was labeled 2. Logits: [ -2.4, 2.1, 8.3, 6.1, -5.8, -6.4, -11.7, 8.7, 4.8, 0.4]
 ```
 
+The above script also dumps out images that were mislabeled. It is intereting to visualize these to see if they are
+relatively tricky.
+
+| Image  | Predicted | Actual | Logits (* = predicted) |
+| ------ | --------- | ------ | ------ |
+![9](incorrect_151_label_9_predicted_8.png) | 8 | 9 | `-2.8, -6.3, 0.9, 5.9, -2.5, 1.5, -8.7, -0.9, *6.9, 6.7` |
+![4](incorrect_247_label_4_predicted_2.png) | 2 | 4 |  `0.4,  0.5, *7.0, -1.5, 5.0, -2.9,  5.0, -0.9, -1.0, -4.6` |
+![6](incorrect_259_label_6_predicted_0.png) | 0 | 6 | `*10.8, -1.2, 0.08, -3.6, -4.8, 4.8, 5.8, -0.6, -0.5, 0.5` |
+![9](incorrect_320_label_9_predicted_7.png) | 7 | 9 | `-3.1,  4.4, -0.2, 3.0, -0.7, -1.9, -8.9, *5.3, 4.4, 5.3` |
+![2](incorrect_321_label_2_predicted_7.png) | 7 | 2 | `2.4, 2.1, 8.3, 6.1, -5.8, -6.4, -11.7, *8.7, 4.8, 0.4` |
 
 
+Most of the above do seem relatively tricky, if guessing by eye. If possible to partition these, we could make another 
+model that is focused on them. For example, perhaps the likliehood is low for all the logits in these cases.
+
+Looking at some of the correct classifications is interesting too. From this small batch, they do seem much easier to
+identify correctly by eye.
+
+| Image  | Predicted | Actual | Logits (* = predicted) |
+| ------ | --------- | ------ | ------ |
+![7](correct_0_label_7_predicted_7.png) | 7 | 7 | `-2.7, -2.7, 3.1, 5.2, -1.4, -0.1, -11.9, *14.0, -2.3, 4.3` |
+![2](correct_1_label_2_predicted_2.png) | 2 | 2 | `3.3, 6.0, *14.9, 3.3, -8.8, -0.9, 1.4, -3.8, 4.1, -9.5` |
+![1](correct_2_label_1_predicted_1.png) | 1 | 1 | `-0.4, *10.0, 2.1, -2.9,  1.5, -2.4, 1.7, 1.9, 1.7, -1.8` |
+![0](correct_3_label_0_predicted_0.png) | 0 | 0 | `*11.9, -2.8, 1.7, -3.4, -2.1, -0.1, 5.0, 0.4, -3.1, 2.2` |
+![4](correct_4_label_4_predicted_4.png) | 4 | 4 | `-1.3, -2.1, -2.3, -4.9, *11.7, -1.8, -0.4, 1.4, -1.9, 3.3` |
 
 ## More links
 
