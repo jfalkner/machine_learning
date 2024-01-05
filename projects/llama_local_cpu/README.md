@@ -34,6 +34,18 @@ There are several choices for pre-trained Llama 2 models. If unsure, start with 
 and will need the least amount of RAM to run (7 * 4 = ~28 GB). The larger models, namely 70B can use a huge amount of
 RAM or VRAM, depending on how you run it.
 
+For the most part, it is near impossible to train 70B unless you have a large amount of VRAM. Stick with the 7b model
+unless you have a higher end computer or are using a service such as Google Colab or even GCP or AWS.
+
+# Running the model locally
+
+This example is run on locally on a Steam Deck running Ubuntu Linux. No remarkable GPU or CPU to mention and 16GB of RAM.
+You should be able to replicate this locally on most laptop and desktop PCs. You can also run this on Google Colab,
+which provides access to a high end GPU.
+
+TODO: example of using ./main locally.
+
+
 ## Links
 
 Miscellaneous links related to Llama 2.
