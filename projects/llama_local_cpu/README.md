@@ -37,6 +37,32 @@ RAM or VRAM, depending on how you run it.
 For the most part, it is near impossible to train 70B unless you have a large amount of VRAM. Stick with the 7b model
 unless you have a higher end computer or are using a service such as Google Colab or even GCP or AWS.
 
+You'll need to convert Meta's model files to GGUF format using `llama.cpp/convert.py` or alternatively, cheat a little
+and download the GGUF file directly from huggingface.co here.
+
+```
+# Example downloading the same files that Meta's ./download.sh script will get
+apt-get -y install -qq aria2
+
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/4bit/Llama-2-7b-chat-hf/resolve/main/model-00001-of-00002.safetensors -d models/Llama-2-7b-chat-hf -o model-00001-of-00002.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/4bit/Llama-2-7b-chat-hf/resolve/main/model-00002-of-00002.safetensors -d models/Llama-2-7b-chat-hf -o model-00002-of-00002.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/4bit/Llama-2-7b-chat-hf/raw/main/model.safetensors.index.json -d models/Llama-2-7b-chat-hf -o model.safetensors.index.json
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/4bit/Llama-2-7b-chat-hf/raw/main/special_tokens_map.json -d models/Llama-2-7b-chat-hf -o special_tokens_map.json
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/4bit/Llama-2-7b-chat-hf/resolve/main/tokenizer.model -d models/Llama-2-7b-chat-hf -o tokenizer.model
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/4bit/Llama-2-7b-chat-hf/raw/main/tokenizer_config.json -d models/Llama-2-7b-chat-hf -o tokenizer_config.json
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/4bit/Llama-2-7b-chat-hf/raw/main/config.json -d models/Llama-2-7b-chat-hf -o config.json
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/4bit/Llama-2-7b-chat-hf/raw/main/generation_config.json -d models/Llama-2-7b-chat-hf -o generation_config.json
+```
+
+Now convert the model's files to GGUF.
+
+```
+# Make sure you have the Python dependencies installed to run `convert.py`
+pip install -r requirements.txt
+./convert.py ../llama_models/llama/models/Llama-2-7b-chat-hf --outfile models/Llama-2-7b-chat-hf.gguf
+```
+
+
 # Running the model locally
 
 This example is run on locally on a Steam Deck running Ubuntu Linux. No remarkable GPU or CPU to mention and 16GB of RAM.
