@@ -1,12 +1,12 @@
 # Use OpenAI/ChatGPT's API with AWS Lambda
 
-ChatGPT is an amazing tool that combines several foundational models for generating text responses, images from text, images to text and many other types of tools. The UI is remarkably easy to use, and with a prompt you can have it write almost anything.
+ChatGPT is an amazing tool that combines several foundational models for generating text responses, images from text, images to text and many other types of tools. The UI is remarkably easy to use, and with a prompt you can have it write almost anything. [OpenAI's API](https://platform.openai.com/docs/introduction) exposes almost everything ChatGPT can do to your software.
 
-[AWS Lambda](https://aws.amazon.com/pm/lambda/) is an appealing way to host custom APIs in a [very inexpensive fashion](https://aws.amazon.com/lambda/pricing/) (e.g. $0.20 per 1M requests with $0.000016 for every GB-second of runtime). You write the code and it'll expose the function to your other AWS services. You can also use AWS Gateway to expose the function as an HTTP API that a webpage can use. AWS Lambda is a great option to pay very little for a web API, includign one that a static website can use. 
+[AWS Lambda](https://aws.amazon.com/pm/lambda/) is an appealing way to host custom APIs in a [very inexpensive fashion](https://aws.amazon.com/lambda/pricing/) (e.g. $0.20 per 1M requests with $0.000016 for every GB-second of runtime). You write the code and it'll expose the function to your other AWS services. You can also use [AWS API Gateway](https://aws.amazon.com/api-gateway/) to expose the function as an HTTP API that a webpage can use. AWS Lambda is a great option to pay very little for a web API, includign one that a static website can use. 
 
 ## Brief Demo
 
-I setup an AI chat bot that uses my resume on [jaysonfalkner.com](http://jaysonfalkner.com) as a demo of what you can do with some static pages and an AWS Lambda function (this write-up) that uses ChatGPT's API. It has a plain text prompt that asks ChatGPT an question via OpenAI's API then displays it on the page. Instead of a static LinkedIn style resume, you can ask exactly what you want and ChatGPT will summarize a response -- even phrasing the output in any practical or silly way desired.
+I setup an AI chat bot that uses my resume on [jaysonfalkner.com](http://jaysonfalkner.com) as a demo of what you can do with some static pages and an AWS Lambda function (this write-up) that uses ChatGPT's API. It has a plain text prompt that asks ChatGPT a question via OpenAI's API then displays it on the page. Instead of a static LinkedIn style resume, you can ask exactly what you want and ChatGPT will summarize a response -- even phrasing the output in any practical or silly way desired.
 
 <img src="jaysonfalkner_website.gif">
 
@@ -70,13 +70,17 @@ Note that the dependencies are installed under a sub-directory named `python`. T
 
 Note that OpenAI's API will install some binaries that were built specifically for the version of Python you are using. Make sure you check `python -V` to get your Python version and pick that same version in AWS Lambda when making your Lambda Function. e.g. Python 3.11, is what was used for this write-up
 
-Finally, create a new Layer in AWS's console for Lambda. You need to give it a name and upload the ZIP.
+Finally, create a new Layer in AWS's console for Lambda. You need to give it a name and upload the ZIP. You can name the layer anything you like, "openai_layer" is used for this example. After the Layer is made, make sure to copy the ARN for it because that is an easy way to later add it to your Function.
 
 ![AWS Lambda Layer](aws_lambda_layer.png)
 
 ### Write a Python-based AWS Lambda function that uses the API
 
 It isn't strictly required that you make a Layer. You could bundle the API and a Lambda function in one ZIP; however, it is likely that you'll want to use the OpenAI API in more than one AWS Lambda function. It is also handy to be able to do small tweaks to the source-code directly in Lambda. Making the Layer allows for both of these things since the source-code itself ends up being not much at all.
+
+Create a new Function in AWS Lambda. You can name it anything. After it is made, view the Function and scroll down to "Layers". There you will need to "Add a Layer". Use the ARN to make a layer, similar to the following.
+
+![AWS Lambda Function with Layer](aws_lambda_function_add_layer.png)
 
 Here is an example Lambda function that is intended to be exposed through AWS API Gateway and made available for HTTP access from static websites. It is similar to [OpenAI's API Quick Start documentation](https://platform.openai.com/docs/quickstart/step-3-sending-your-first-api-request).
 
@@ -143,6 +147,8 @@ Make a ZIP of `lambda_function.py` and `resume.txt`.
 zip -r ./example_function.zip lambda_function.py resume.txt
 ```
 
+Upload this `example_function.zip` file as your Lambda Function using the "Upload From" button and ".zip file" option.
+
 Before trying it out, make sure to add your OpenAI key to the environment for this Function in AWS Lambda. This is required to authorize your request with OpenAI, using your account.
 
 ![AWS Lambda ENV](aws_lambda_env.png)
@@ -174,7 +180,7 @@ AWS has many services. AWS API Gateway will let you expose your Lambda function 
 
 AWS API Gateway has [documentation for exposing a Lambda function as an HTTP service](https://docs.aws.amazon.com/lambda/latest/dg/services-apigateway.html). Below is mostly copy-pasta showing example settings.
 
-WIP: screenshot of adding the lambda function.
+Create a new "REST API" and add a resource to it named "/prompt" for POST. Link this to your AWS Lambda Function again via ARN. See the above link if you are new to API Gateway and need some more granular steps.
 
 Now that the API is connected you can access the API using the newly exposed IP address. Below is a `curl`-based example.
 
@@ -208,3 +214,7 @@ fetch(YOUR_AWS_API_GATEWAY_URL, {
   }
 );
 ```
+
+## Summary
+
+That is it! OpenAI's API is straight-forward to use with Python. It doesn't take much to make a reusable Layer in AWS Lambda that allows you to quickly create sever side functions. Exposing the functions through API Gateway will then let any static website use ChatGPT's functionality.
