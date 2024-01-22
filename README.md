@@ -8,12 +8,13 @@ Why post this code? Neural networks have been used in some really clever ways an
 
 I try to create examples using both [TensorFlow](https://www.tensorflow.org/) and [PyTorch](https://pytorch.org/), which are popular frameworks. Likely what you'd use professionally. Hugging Face has [Tasks](https://huggingface.co/tasks) are many great examples that use the previously mentioned frameworks too.
 
-Most code examples are in Python but I'll also include some Java, C/C++ CUDA and Linux CLI. These too are the main methods you'd likely use professionally.
+Most code examples are in Python but I'll also include some Java, C/C++ CUDA and Linux CLI. AWS and ChatGPT's API are used too. These too are the main methods you'd likely use professionally.
 
 ## Examples
 
 These are all a mix of examples you should be able to easily run yourself.
 
+* [Use OpenAI/ChatGPT's API with AWS Lambda](projects/openai_lambda_layer/README.md)
 * [Stable diffusion using just your CPU (doing it the slow way!)](projects/stable_diffusion_cpu/README.md)
 * [Classifying handwritten numbers by remaking LeNet-5 and MNIST using PyTorch](projects/lenet5_mnist/README.md)
 
