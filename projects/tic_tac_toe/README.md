@@ -10,3 +10,4 @@ The overall strategy is interesting since it can be used to solve many classes o
 - [Evolution Strategies as a Scalable Alternative to Reinforcement Learning](https://arxiv.org/abs/1703.03864) T. Salimans, et al.
 - [pytorch-es](https://github.com/atgambardella/pytorch-es) GitHub Repo
 - [pytorch-es-tic-tac-toe](https://github.com/Zeta36/pytorch-es-tic-tac-toe/blob/master/README.md) GitHub Repo
+- [tictactoe-Q-learning](https://www.kaggle.com/code/shihhsuanchen/tictactoe-q-learning) on Kaggle
