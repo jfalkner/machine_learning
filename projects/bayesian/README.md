@@ -190,6 +190,18 @@ The models results are printed as output along with a visualization of the same 
 interesting to look first at the visualization. It is clear that all of the effects that were
 purposely added to the fake data were found.
 
+Vertical lines are added to help show both the expected baseline value of 100 for a run, and that
+zero is the expected impact from tech and reagent. Notice the following.
+
+* Run `Run_3` is clearly worse compared to the other runs. This is also independent of tech and reagent.
+* Reagent `C` seems like a bad lot. It has a negative impact on the assay and should be replaced.
+* Technician `Bob` has a similarly negative impact on the assay. He should likely get more training.
+
+All of the above are unsurprising given that we know how the fake data was generated; however,
+the model identified these issues without knowing anything about how the data was generated. If this
+was real data, these would all be interesting findings for improving the assay.
+
+
 ![bayesian_model.png](bayesian_model.png)
 
 The fitted model results are also printed as the following.
@@ -209,5 +221,5 @@ mu_tech[Jane]   2.749  5.868  -7.639  ...    1556.0    1732.0    1.0
 ```
 
 You can run the above example with a copy of the `plate_modeling.py` script and the conda
-environment described by `setup.md`. Then run ``
+environment described by `setup.md`. Then run `conda run -n bayesian_example python plate_modeling.py`
 
