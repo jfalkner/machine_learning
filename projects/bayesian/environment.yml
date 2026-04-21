@@ -1,0 +1,11 @@
+name: bayesian_example
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - numpy
+  - pandas
+  - pymc
+  - arviz<1.0
+  - matplotlib
