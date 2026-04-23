@@ -10,8 +10,10 @@ a 96-well plate with reactions that use different lots of reagents and are run b
 technicians at different times on the same instrument. Sometimes assay runs don't work as well as
 they should and it'd be helpful to have better clarity about why. 
 
-Examples here are largely based on the excellent "[Statistical Rethinking](https://github.com/dustinstansbury/statistical-rethinking-2023)" 
-book and recorded lectures. 
+The excellent "[Statistical Rethinking](https://github.com/dustinstansbury/statistical-rethinking-2023)"
+book and recorded lectures inspired this write-up. I've worked with many labs and with many
+different assays. This approach is one of my current favorites for helping to QC and keep an assay
+running well.
 
 ## Example: Plate Assay Outlier Detection
 
