@@ -11,7 +11,7 @@ I try to create examples using both [TensorFlow](https://www.tensorflow.org/) an
 Most code examples are in Python but I'll also include some Java, C/C++ CUDA and Linux CLI. AWS and ChatGPT's API are used too. These too are the main methods you'd likely use professionally.
 
 ## Examples
-s
+
 These are all a mix of examples you should be able to easily run yourself.
 
 * [Bayesian Modeling of a Lab Assay](projects/bayesian/README.md)]
