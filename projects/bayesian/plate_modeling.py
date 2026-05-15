@@ -104,7 +104,9 @@ def model_data(df):
         obs = pm.Normal('obs', mu=mu, sigma=sigma, observed=df['value'])
 
         # Sampling
-        return pm.sample(1000, tune=1000, target_accept=0.9, return_inferencedata=True)
+        trace = pm.sample(1000, tune=1000, target_accept=0.9, return_inferencedata=True)
+        pm.sample_posterior_predictive(trace, extend_inferencedata=True)
+        return trace
 
 def print_model_and_make_plot(trace):
     # Prints out a tabular form of the fitted model
@@ -112,17 +114,39 @@ def print_model_and_make_plot(trace):
     print(az.summary(trace, var_names=['mu_run', 'mu_reagent', 'mu_tech']))
 
     # Create a nice plot showing the model. Save it to a png file and also display it.
-    fig, axes = plt.subplots(2, 1, figsize=(10, 10))
+    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
 
-    az.plot_forest(trace, var_names=['mu_run', 'mu_reagent', 'mu_tech'], ax=axes[0])
-    axes[0].set_title("Mean Effects (Run, Reagent, Tech)")
-    axes[0].axvline(0, color='red', linestyle='--', alpha=0.5, label='Zero Offset')
-    axes[0].axvline(100, color='green', linestyle='--', alpha=0.5, label='Expected Baseline')
-    axes[0].legend()
+    # Mean Effects
+    az.plot_forest(trace, var_names=['mu_run', 'mu_reagent', 'mu_tech'], ax=axes[0, 0])
+    axes[0, 0].set_title("Mean Effects (Run, Reagent, Tech)")
+    axes[0, 0].axvline(0, color='red', linestyle='--', alpha=0.5, label='Zero Offset')
+    axes[0, 0].axvline(100, color='green', linestyle='--', alpha=0.5, label='Expected Baseline')
+    axes[0, 0].legend()
 
-    az.plot_forest(trace, var_names=['sigma_run', 'sigma_reagent', 'sigma_tech'], ax=axes[1])
-    axes[1].set_title("Variability Effects (Standard Deviations)")
-    axes[1].axvline(0, color='black', linestyle='-', alpha=0.3)
+    # Variability Effects
+    az.plot_forest(trace, var_names=['sigma_run', 'sigma_reagent', 'sigma_tech'], ax=axes[0, 1])
+    axes[0, 1].set_title("Variability Effects (Standard Deviations)")
+    axes[0, 1].axvline(0, color='black', linestyle='-', alpha=0.3)
+
+    # Posterior Predictive Check (Distribution)
+    az.plot_ppc(trace, ax=axes[1, 0])
+    axes[1, 0].set_title("Posterior Predictive Check")
+
+    # Predicted vs Observed (Scatter)
+    y_obs = trace.observed_data['obs']
+    y_pred = trace.posterior_predictive['obs'].mean(dim=['chain', 'draw'])
+    axes[1, 1].scatter(y_obs, y_pred, alpha=0.3, s=10)
+    
+    # Add 1:1 line
+    lims = [
+        min(axes[1, 1].get_xlim()[0], axes[1, 1].get_ylim()[0]),
+        max(axes[1, 1].get_xlim()[1], axes[1, 1].get_ylim()[1]),
+    ]
+    axes[1, 1].plot(lims, lims, 'k--', alpha=0.75, zorder=0, label='1:1 Line')
+    axes[1, 1].set_title("Predicted vs Observed")
+    axes[1, 1].set_xlabel("Observed Values")
+    axes[1, 1].set_ylabel("Predicted Values (Mean)")
+    axes[1, 1].legend()
 
     plt.tight_layout()
     plt.savefig("bayesian_model.png")
